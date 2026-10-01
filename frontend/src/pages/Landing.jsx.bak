@@ -1,0 +1,22 @@
+import { Box } from '@mui/material';
+import Navbar from '../components/Landing/Navbar';
+import HeroSection from '../components/Landing/HeroSection';
+import FeaturesSection from '../components/Landing/FeaturesSection';
+import WhySection from '../components/Landing/WhySection';
+import SecuritySection from '../components/Landing/SecuritySection';
+import FaqSection from '../components/Landing/FaqSection';
+import Footer from '../components/Landing/Footer';
+
+export default function Landing() {
+  return (
+    <Box id="top" sx={{ bgcolor: '#faf9ff', minHeight: '100vh', color: 'text.primary' }}>
+      <Navbar />
+      <HeroSection />
+      <WhySection />
+        <FeaturesSection />
+      <SecuritySection />
+      <FaqSection />
+      <Footer />
+    </Box>
+  );
+}
