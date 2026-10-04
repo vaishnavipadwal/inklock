@@ -122,7 +122,7 @@ function Item({ t, soon }) {
 
 export default function WhySection() {
   return (
-    <Box id="why" sx={{ bgcolor: '#faf9ff', py: { xs: 8, md: 12 }, borderTop: '1px solid #ece8ff' }}>
+    <Box id="why" sx={{ bgcolor: '#f3f4fa', py: { xs: 8, md: 12 }, borderTop: '1px solid #ece8ff' }}>
       <Container maxWidth="lg">
         {/* ---------- Heading ---------- */}
         <motion.div {...fade()}>
@@ -176,26 +176,6 @@ export default function WhySection() {
           ))}
         </Box>
 
-        {/* ---------- Built to grow banner ---------- */}
-        <motion.div {...fade()}>
-          <Box sx={{ p: '2px', borderRadius: 4, background: BRAND, boxShadow: '0 24px 60px rgba(95,90,255,0.2)' }}>
-            <Box sx={{ p: { xs: 3.5, md: 5 }, borderRadius: '14px', bgcolor: '#fff', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-between', gap: 3, textAlign: { xs: 'center', md: 'left' } }}>
-              <Box>
-                <Typography sx={{ fontFamily: HEAD_FONT, fontWeight: 800, fontSize: { xs: '1.4rem', md: '1.8rem' }, mb: 1, color: '#1b1b2f' }}>
-                  Built to grow with you.
-                </Typography>
-                <Typography color="text.secondary" sx={{ maxWidth: 560, lineHeight: 1.65 }}>
-                  New features land regularly, and your notebooks and vault stay exactly where you left them.
-                  Start with the essentials today.
-                </Typography>
-              </Box>
-              <Button component={Link} to="/register" variant="contained" size="large"
-                sx={{ py: 1.4, px: 4.5, flexShrink: 0, borderRadius: 8, fontSize: '1.02rem', background: BRAND, boxShadow: '0 10px 28px rgba(95,90,255,0.4)', '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 14px 34px rgba(95,90,255,0.5)' }, transition: 'all .2s' }}>
-                Get started free
-              </Button>
-            </Box>
-          </Box>
-        </motion.div>
       </Container>
     </Box>
   );

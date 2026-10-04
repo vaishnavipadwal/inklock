@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Container, Typography, Box, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import AddIcon from '@mui/icons-material/Add';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 const BRAND = 'linear-gradient(90deg, #a238ff 0%, #2f8bff 55%, #00e5ff 100%)';
 const HEAD = '"Poppins", "Inter", sans-serif';
 
-const cats = ['All', 'Getting started', 'Privacy', 'Features'];
+const cats = ['Getting started', 'Privacy', 'Features'];
 
 const faqs = [
   { c: 'Getting started', q: 'Is InkLock free to start?', a: 'Yes. Create an account and start writing right away, no card needed.' },
@@ -30,8 +30,8 @@ function Item({ f, open, onToggle }) {
       <Box component="button" onClick={onToggle} aria-expanded={open}
         sx={{ all: 'unset', boxSizing: 'border-box', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, p: { xs: 2, sm: 2.5 } }}>
         <Typography sx={{ fontWeight: 700, color: '#1b1b2f', fontSize: { xs: '0.98rem', sm: '1.05rem' } }}>{f.q}</Typography>
-        <Box sx={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: open ? '#fff' : '#7c6cff', background: open ? BRAND : '#f1eeff', transform: open ? 'rotate(135deg)' : 'none', transition: 'all .3s' }}>
-          <AddIcon sx={{ fontSize: 20 }} />
+        <Box sx={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: open ? '#fff' : '#7c6cff', background: open ? BRAND : '#f1eeff', transform: open ? 'rotate(180deg)' : 'none', transition: 'all .3s' }}>
+          <KeyboardArrowDownIcon sx={{ fontSize: 20 }} />
         </Box>
       </Box>
       <AnimatePresence initial={false}>
@@ -46,12 +46,12 @@ function Item({ f, open, onToggle }) {
 }
 
 export default function FaqSection() {
-  const [cat, setCat] = useState('All');
+  const [cat, setCat] = useState('Getting started');
   const [open, setOpen] = useState(faqs[0].q);
-  const list = faqs.filter((f) => cat === 'All' || f.c === cat);
+  const list = faqs.filter((f) => f.c === cat);
 
   return (
-    <Box id="faq" sx={{ position: 'relative', bgcolor: '#faf9ff', py: { xs: 8, md: 12 }, borderTop: '1px solid #ece8ff', overflow: 'hidden' }}>
+    <Box id="faq" sx={{ position: 'relative', bgcolor: '#f3f4fa', py: { xs: 8, md: 12 }, borderTop: '1px solid #ece8ff', overflow: 'hidden' }}>
       <Container maxWidth="lg">
         <Box sx={{ display: 'grid', gap: { xs: 5, md: 8 }, gridTemplateColumns: { xs: '1fr', md: '4fr 7fr' }, alignItems: 'start' }}>
           {/* left: heading + help card */}

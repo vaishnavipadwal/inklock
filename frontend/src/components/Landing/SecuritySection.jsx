@@ -120,7 +120,7 @@ function VaultDemo() {
 
 export default function SecuritySection() {
   return (
-    <Box id="security" sx={{ position: 'relative', bgcolor: '#fff', py: { xs: 8, md: 12 }, borderTop: '1px solid #ece8ff', overflow: 'hidden' }}>
+    <Box id="security" sx={{ position: 'relative', bgcolor: '#f3f4fa', py: { xs: 8, md: 12 }, borderTop: '1px solid #ece8ff', overflow: 'hidden' }}>
       <Box sx={{ position: 'absolute', top: '5%', right: '-10%', width: 440, height: 440, borderRadius: '50%', bgcolor: 'rgba(0,229,255,0.10)', filter: 'blur(110px)', pointerEvents: 'none' }} />
       <Container maxWidth="lg" sx={{ position: 'relative' }}>
         <motion.div {...fade()}>

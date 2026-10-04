@@ -203,7 +203,7 @@ function FeatureCard({ f, i }) {
 
 export default function FeaturesSection() {
   return (
-    <Box id="features" sx={{ position: 'relative', bgcolor: '#ffffff', py: { xs: 8, md: 12 }, borderTop: '1px solid #ece8ff', overflow: 'hidden' }}>
+    <Box id="features" sx={{ position: 'relative', bgcolor: '#f3f4fa', py: { xs: 8, md: 12 }, borderTop: '1px solid #ece8ff', overflow: 'hidden' }}>
       <Box sx={{ position: 'absolute', top: '10%', left: '-10%', width: 420, height: 420, borderRadius: '50%', bgcolor: 'rgba(162,56,255,0.08)', filter: 'blur(110px)', pointerEvents: 'none' }} />
       <Box sx={{ position: 'absolute', bottom: '5%', right: '-10%', width: 420, height: 420, borderRadius: '50%', bgcolor: 'rgba(0,229,255,0.10)', filter: 'blur(110px)', pointerEvents: 'none' }} />
 

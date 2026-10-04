@@ -118,13 +118,7 @@ export default function HeroSection() {
   });
 
   return (
-    <Box sx={{ position: 'relative', bgcolor: '#ffffff', overflow: 'hidden' }}>
-      {/* soft brand glow */}
-      <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-        <Box sx={{ position: 'absolute', top: '-10%', right: '-8%', width: 560, height: 560, borderRadius: '50%', bgcolor: 'rgba(0,229,255,0.14)', filter: 'blur(110px)' }} />
-        <Box sx={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 520, height: 520, borderRadius: '50%', bgcolor: 'rgba(162,56,255,0.14)', filter: 'blur(110px)' }} />
-      </Box>
-
+    <Box sx={{ position: 'relative', bgcolor: '#f3f4fa', overflow: 'hidden' }}>
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pt: { xs: 6, md: 9 }, pb: { xs: 8, md: 12 }, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 8, md: 6 }, alignItems: 'center' }}>
         {/* ---------- LEFT: copy ---------- */}
         <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' } }}>
@@ -138,7 +132,7 @@ export default function HeroSection() {
           </motion.div>
 
           <motion.div {...rise(0.1)}>
-            <Typography component="h1" sx={{ mb: 3, fontFamily: HEAD_FONT, fontWeight: 800, fontSize: { xs: '2.6rem', md: '3.9rem' }, lineHeight: 1.1, letterSpacing: '-0.03em' }}>
+            <Typography component="h1" sx={{ mb: 3, fontFamily: HEAD_FONT, fontWeight: 800, fontSize: { xs: '2.6rem', md: '3.9rem' }, lineHeight: 1.1, letterSpacing: '-0.03em', whiteSpace: 'nowrap' }}>
               Your notebooks.<br />
               Your secrets.<br />
               <Box component="span" sx={{ background: BRAND, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -180,7 +174,7 @@ export default function HeroSection() {
         </Box>
 
         {/* ---------- RIGHT: live product mockup ---------- */}
-        <Box sx={{ flex: 1.1, width: '100%', maxWidth: 560, position: 'relative' }}>
+        <Box sx={{ flex: 1.8, width: '100%', maxWidth: 1700, position: 'relative', top: { md: -80 }, left: { md: 190 } }}>
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -196,9 +190,9 @@ export default function HeroSection() {
                   <Typography variant="caption" sx={{ ml: 1.5, color: 'text.secondary', fontWeight: 600 }}>inklock.app</Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', minHeight: 330 }}>
+                <Box sx={{ display: 'flex', minHeight: 420 }}>
                   {/* sidebar */}
-                  <Box sx={{ width: { xs: 120, sm: 160 }, p: 1.5, borderRight: '1px solid #f0edff', bgcolor: '#fcfbff' }}>
+                  <Box sx={{ width: { xs: 140, sm: 220 }, p: 1.5, borderRight: '1px solid #f0edff', bgcolor: '#fcfbff' }}>
                     <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: 1.5, fontSize: '0.65rem' }}>
                       Books
                     </Typography>

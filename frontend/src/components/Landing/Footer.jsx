@@ -42,34 +42,11 @@ const ColTitle = ({ children }) => (
 
 export default function Footer() {
   return (
-    <Box component="footer" sx={{ position: 'relative', bgcolor: '#faf9ff', borderTop: '1px solid #ece8ff', overflow: 'hidden' }}>
+    <Box component="footer" sx={{ position: 'relative', bgcolor: '#f3f4fa', borderTop: '1px solid #ece8ff', overflow: 'hidden', pt: { xs: 8, md: 10 } }}>
       <Box sx={{ position: 'absolute', bottom: '-30%', left: '-8%', width: 420, height: 420, borderRadius: '50%', bgcolor: 'rgba(162,56,255,0.08)', filter: 'blur(110px)', pointerEvents: 'none' }} />
       <Box sx={{ position: 'absolute', top: '-20%', right: '-8%', width: 420, height: 420, borderRadius: '50%', bgcolor: 'rgba(0,229,255,0.10)', filter: 'blur(110px)', pointerEvents: 'none' }} />
 
       <Container maxWidth="lg" sx={{ position: 'relative' }}>
-        {/* ---------- closing CTA ---------- */}
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        >
-          <Box sx={{ mt: { xs: 8, md: 10 }, mb: { xs: 7, md: 9 }, p: { xs: 4, md: 6 }, borderRadius: 5, background: BRAND, boxShadow: '0 30px 70px rgba(95,90,255,0.3)', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-between', gap: 3, textAlign: { xs: 'center', md: 'left' } }}>
-            <Box>
-              <Typography sx={{ fontFamily: HEAD, fontWeight: 800, fontSize: { xs: '1.6rem', md: '2.1rem' }, lineHeight: 1.2, color: '#fff', mb: 1 }}>
-                Write freely. Lock securely.
-              </Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.88)', maxWidth: 520, lineHeight: 1.6 }}>
-                Start your first notebook in under a minute, and keep your logins safe in the same place.
-              </Typography>
-            </Box>
-            <Button component={Link} to="/register" size="large"
-              sx={{ py: 1.5, px: 4.5, flexShrink: 0, borderRadius: 8, bgcolor: '#fff', color: '#5b4bd6', fontWeight: 700, fontSize: '1.02rem', boxShadow: '0 10px 28px rgba(0,0,0,0.18)', transition: 'all .2s', '&:hover': { bgcolor: '#fff', transform: 'translateY(-2px)', boxShadow: '0 14px 34px rgba(0,0,0,0.25)' } }}>
-              Get started free
-            </Button>
-          </Box>
-        </motion.div>
-
         {/* ---------- main columns ---------- */}
         <Box sx={{ display: 'grid', gap: { xs: 5, md: 6 }, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: '5fr 2fr 2fr 3fr' }, pb: 6 }}>
           {/* brand */}
