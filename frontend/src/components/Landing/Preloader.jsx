@@ -31,7 +31,9 @@ const NIB =
   'M566 367 L694 367 C700 400 722 440 755 490 C715 560 665 620 632 715 L622 715 C590 650 560 580 500 490 C535 450 555 405 566 367 Z';
 
 export default function Preloader() {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(() => {
+    return !sessionStorage.getItem('inklock_preloader_seen');
+  });
 
   const pathRef = useRef(null);
   const progress = useMotionValue(0);
@@ -45,6 +47,9 @@ export default function Preloader() {
   const clipWidth = useTransform(progress, [0, 1], [0, 320]);
 
   useEffect(() => {
+    if (!show) return;
+    sessionStorage.setItem('inklock_preloader_seen', 'true');
+
     const path = pathRef.current;
     if (!path) return;
 

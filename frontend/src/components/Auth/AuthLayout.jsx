@@ -33,40 +33,9 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
   return (
     <ThemeProvider theme={lightTheme}>
       <CssBaseline />
-      <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '5fr 6fr' }, bgcolor: '#fff' }}>
-        {/* ---------- left: brand panel ---------- */}
-        <Box sx={{ position: 'relative', display: { xs: 'none', md: 'flex' }, flexDirection: 'column', justifyContent: 'center', p: 7, color: '#fff', overflow: 'hidden', background: 'linear-gradient(145deg, #7a2cff 0%, #2f6bff 55%, #00b8e6 100%)' }}>
-          <motion.div animate={{ y: [0, -24, 0], x: [0, 14, 0] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ position: 'absolute', top: '-8%', right: '-12%', width: 380, height: 380, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', filter: 'blur(40px)' }} />
-          <motion.div animate={{ y: [0, 26, 0], x: [0, -16, 0] }} transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ position: 'absolute', bottom: '-12%', left: '-10%', width: 420, height: 420, borderRadius: '50%', background: 'rgba(0,229,255,0.25)', filter: 'blur(50px)' }} />
-
-          <Box sx={{ position: 'relative', maxWidth: 460 }}>
-            <Typography sx={{ fontFamily: HEAD, fontWeight: 800, fontSize: '2.7rem', lineHeight: 1.12, letterSpacing: '-0.02em', mb: 2 }}>
-              Write freely.<br />Lock securely.
-            </Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.88)', fontSize: '1.08rem', lineHeight: 1.65, mb: 5 }}>
-              Your notebooks and your passwords, in one private place that only you can open.
-            </Typography>
-
-            {points.map((p, i) => (
-              <motion.div key={p.t} initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.12, duration: 0.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.4 }}>
-                  <Box sx={{ width: 44, height: 44, borderRadius: 2.5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(8px)' }}>
-                    {p.icon}
-                  </Box>
-                  <Box>
-                    <Typography sx={{ fontWeight: 700 }}>{p.t}</Typography>
-                    <Typography sx={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>{p.d}</Typography>
-                  </Box>
-                </Box>
-              </motion.div>
-            ))}
-          </Box>
-        </Box>
-
-        {/* ---------- right: form ---------- */}
-        <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', px: { xs: 3, sm: 6 }, py: 6, bgcolor: '#fff', overflow: 'hidden' }}>
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#fff' }}>
+        {/* ---------- form ---------- */}
+        <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', px: { xs: 3, sm: 6 }, py: 6, bgcolor: '#fff', overflow: 'hidden', width: '100%' }}>
           <Box sx={{ position: 'absolute', top: '-10%', right: '-10%', width: 320, height: 320, borderRadius: '50%', bgcolor: 'rgba(0,229,255,0.10)', filter: 'blur(90px)', pointerEvents: 'none' }} />
           <Box sx={{ position: 'absolute', bottom: '-10%', left: '-10%', width: 320, height: 320, borderRadius: '50%', bgcolor: 'rgba(162,56,255,0.10)', filter: 'blur(90px)', pointerEvents: 'none' }} />
 
