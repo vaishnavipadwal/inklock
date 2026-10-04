@@ -1,14 +1,23 @@
-from typing import List
+import uuid
+from pathlib import Path
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
+from ..security import hash_password
 from .auth import get_current_user
 
 router = APIRouter(prefix="/books", tags=["books"])
+
+COVER_DIR = Path(__file__).resolve().parent.parent.parent / "uploads" / "covers"
+COVER_DIR.mkdir(parents=True, exist_ok=True)
+ALLOWED_TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
+MAX_COVER_BYTES = 2 * 1024 * 1024
+COVER_COLORS = {"#4f46e5", "#0ea5e9", "#14b8a6", "#f59e0b", "#ef4444", "#a855f7"}
 
 
 def get_own_book(book_id: int, user: models.User, db: Session) -> models.Book:
@@ -36,9 +45,43 @@ def get_own_page(book_id: int, page_id: int, user: models.User, db: Session) -> 
 
 # ---------- Books ----------
 @router.post("", response_model=schemas.BookOut, status_code=201)
-def create_book(data: schemas.BookIn, user: models.User = Depends(get_current_user),
-                db: Session = Depends(get_db)):
-    book = models.Book(user_id=user.id, title=data.title, cover_color=data.cover_color)
+async def create_book(
+    title: str = Form(...),
+    description: str = Form(""),
+    is_private: bool = Form(False),
+    password: str = Form(""),
+    cover_color: str = Form("#4f46e5"),
+    cover: Optional[UploadFile] = File(None),
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    title = title.strip()
+    if not title or len(title) > 150:
+        raise HTTPException(400, "Book name is required (max 150 characters).")
+    if is_private and len(password) < 6:
+        raise HTTPException(400, "A private book needs a password of at least 6 characters.")
+
+    cover_path = None
+    if cover is not None and cover.filename:
+        ext = ALLOWED_TYPES.get(cover.content_type)
+        if not ext:
+            raise HTTPException(400, "Cover must be a JPG, PNG or WebP image.")
+        data = await cover.read(MAX_COVER_BYTES + 1)
+        if len(data) > MAX_COVER_BYTES:
+            raise HTTPException(400, "Cover image must be 2 MB or smaller.")
+        filename = f"{uuid.uuid4().hex}{ext}"
+        (COVER_DIR / filename).write_bytes(data)
+        cover_path = f"/uploads/covers/{filename}"
+
+    book = models.Book(
+        user_id=user.id,
+        title=title,
+        description=description.strip() or None,
+        cover_image=cover_path,
+        cover_color=cover_color if cover_color in COVER_COLORS else "#4f46e5",
+        is_locked=is_private,
+        lock_hash=hash_password(password) if is_private else None,
+    )
     db.add(book)
     db.commit()
     db.refresh(book)
@@ -67,7 +110,7 @@ def update_book(book_id: int, data: schemas.BookIn,
 def delete_book(book_id: int, user: models.User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
     book = get_own_book(book_id, user, db)
-    book.is_deleted = True          # soft delete (goes to trash)
+    book.is_deleted = True
     db.commit()
 
 
@@ -107,7 +150,7 @@ def update_page(book_id: int, page_id: int, data: schemas.PageUpdate,
     if data.title is not None:
         page.title = data.title
     if data.blocks is not None:
-        page.blocks.clear()          # delete-orphan removes the old blocks
+        page.blocks.clear()
         db.flush()
         for i, b in enumerate(data.blocks):
             page.blocks.append(models.PageBlock(

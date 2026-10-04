@@ -20,8 +20,11 @@ class Book(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(150), nullable=False)
+    description = Column(Text, nullable=True)
+    cover_image = Column(String(255), nullable=True)
     cover_color = Column(String(20), default="#4f46e5")
     is_locked = Column(Boolean, default=False)
+    lock_hash = Column(String(255), nullable=True)
     is_deleted = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
 

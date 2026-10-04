@@ -1,3 +1,5 @@
+from typing import List, Literal, Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -25,9 +27,6 @@ class UserOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-from typing import List, Literal, Optional
-
-
 class BookIn(BaseModel):
     title: str = Field(min_length=1, max_length=150)
     cover_color: str = "#4f46e5"
@@ -36,6 +35,8 @@ class BookIn(BaseModel):
 class BookOut(BaseModel):
     id: int
     title: str
+    description: Optional[str] = None
+    cover_image: Optional[str] = None
     cover_color: str
     is_locked: bool
 
@@ -60,7 +61,7 @@ class PageIn(BaseModel):
 
 class PageUpdate(BaseModel):
     title: Optional[str] = Field(default=None, max_length=150)
-    blocks: Optional[List[BlockIn]] = None   # replaces all blocks (used by auto-save)
+    blocks: Optional[List[BlockIn]] = None
 
 
 class PageListOut(BaseModel):
