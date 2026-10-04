@@ -5,6 +5,7 @@ import {
   AnimatePresence,
   animate,
   useMotionValue,
+  useTransform,
 } from 'framer-motion';
 
 /*
@@ -17,7 +18,7 @@ const TOTAL_MS = 6300; // when the preloader fades out
 
 // The handwritten scribble the nib follows (pen tip follows this exact curve)
 const WRITE_PATH =
-  'M480 690 C500 620 530 620 540 680 C548 720 575 700 585 650 C595 600 625 610 628 670 C632 725 665 705 675 655 C683 615 715 615 722 665 C728 700 750 700 780 630';
+  'M 480 455 C 510 435, 530 475, 560 455 C 590 435, 610 475, 640 455 C 670 435, 690 475, 720 455 C 740 435, 760 475, 770 455';
 
 // Shield half (left side). Right side is the same shape mirrored.
 const SHIELD_HALF =
@@ -40,6 +41,8 @@ export default function Preloader() {
   const nibOpacity = useMotionValue(0);
   const paperOpacity = useMotionValue(0);
   const inkOpacity = useMotionValue(1);
+
+  const clipWidth = useTransform(progress, [0, 1], [0, 320]);
 
   useEffect(() => {
     const path = pathRef.current;
@@ -116,7 +119,7 @@ export default function Preloader() {
         >
           <svg
             viewBox="270 200 720 780"
-            style={{ width: 'min(80vmin, 560px)', height: 'auto', overflow: 'visible' }}
+            style={{ width: 'min(40vmin, 280px)', height: 'auto', overflow: 'visible' }}
           >
             <defs>
               {/* purple -> blue -> cyan, same as the logo */}
@@ -153,6 +156,15 @@ export default function Preloader() {
                 <feDropShadow dx="0" dy="10" stdDeviation="14" floodColor="#7c6cff" floodOpacity="0.25" />
               </filter>
 
+              <clipPath id="lets-get-started-clip">
+                <motion.rect
+                  x="470"
+                  y="400"
+                  height="100"
+                  style={{ width: clipWidth }}
+                />
+              </clipPath>
+
               {/* left-to-right wipe for the name */}
               <clipPath id="ilk-text-clip">
                 <motion.rect
@@ -178,12 +190,21 @@ export default function Preloader() {
               ref={pathRef}
               d={WRITE_PATH}
               fill="none"
-              stroke="url(#ilk-grad)"
-              strokeWidth="9"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ pathLength: progress, opacity: inkOpacity }}
+              stroke="transparent"
+              style={{ pathLength: progress }}
             />
+            <motion.g style={{ opacity: inkOpacity }} clipPath="url(#lets-get-started-clip)">
+              <text
+                x="480"
+                y="460"
+                fill="url(#ilk-grad)"
+                fontFamily="'Brush Script MT', 'Caveat', 'Dancing Script', cursive"
+                fontSize="48"
+                fontWeight="500"
+              >
+                let's get started
+              </text>
+            </motion.g>
 
             {/* ---------- THE NIB (rotates around its tip) ---------- */}
             <motion.g
