@@ -1,4 +1,5 @@
 import time
+import shutil
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -18,11 +19,9 @@ from .private import require_section
 
 router = APIRouter(prefix="/books", tags=["books"])
 
-COVER_DIR = Path(__file__).resolve().parent.parent.parent / "uploads" / "covers"
-COVER_DIR.mkdir(parents=True, exist_ok=True)
-ALLOWED_TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
-MAX_COVER_BYTES = 2 * 1024 * 1024
 COVER_COLORS = {"#4f46e5", "#0ea5e9", "#14b8a6", "#f59e0b", "#ef4444", "#a855f7"}
+UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 BOOK_TOKEN_MINUTES = 30
 MAX_ATTEMPTS = 5
@@ -248,7 +247,7 @@ def create_page(book_id: int, data: schemas.PageIn,
                 user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     get_unlocked_book(book_id, user, db, x_book_token)
     last = db.query(func.max(models.Page.page_number)).filter(
-        models.Page.book_id == book_id).scalar() or 0
+        models.Page.book_id == book_id, models.Page.is_deleted == False).scalar() or 0
     page = models.Page(book_id=book_id, page_number=last + 1, title=data.title)
     db.add(page)
     db.commit()
@@ -294,4 +293,27 @@ def delete_page(book_id: int, page_id: int, x_book_token: Optional[str] = Header
                 user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     page = get_own_page(book_id, page_id, user, db, x_book_token)
     page.is_deleted = True
+    page.page_number = -page.id
+    db.flush()
+
+    # Re-order the remaining active pages sequentially
+    active_pages = db.query(models.Page).filter(
+        models.Page.book_id == book_id, models.Page.is_deleted == False
+    ).order_by(models.Page.page_number).all()
+    
+    for i, p in enumerate(active_pages, start=1):
+        p.page_number = i
+
     db.commit()
+
+
+@router.post("/upload_image")
+def upload_image(file: UploadFile = File(...), user: models.User = Depends(get_current_user)):
+    ext = file.filename.split('.')[-1].lower()
+    if ext not in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+        ext = 'png'
+    new_name = f"{uuid.uuid4().hex}.{ext}"
+    out_path = UPLOAD_DIR / new_name
+    with open(out_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"url": f"http://127.0.0.1:8000/uploads/{new_name}"}

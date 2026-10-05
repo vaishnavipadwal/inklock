@@ -1,216 +1,79 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import api, { getToken } from "../api/books";
-import "../styles/Workspace.css";
-
-let uid = 0;
-const withKey = (b) => ({ ...b, key: ++uid });
-const newBlock = (type = "text") => withKey({ block_type: type, content: "" });
-
-import Block from "../components/BookEditor/Block";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import useBookEditor from "../hooks/useBookEditor";
+import useNotebookPrefs from "../hooks/useNotebookPrefs";
+import PageList from "../components/BookEditor/PageList";
+import EditorToolbar from "../components/BookEditor/EditorToolbar";
+import Paper from "../components/BookEditor/Paper";
+import PrintMulti from "../components/BookEditor/PrintMulti";
+import "../components/BookEditor/Editor.css";
 
 export default function BookEditor() {
   const { bookId } = useParams();
-  const nav = useNavigate();
-  const [bookTitle, setBookTitle] = useState("");
-  const [pages, setPages] = useState([]);
-  const [activeId, setActiveId] = useState(null);
-  const [title, setTitle] = useState("");
-  const [blocks, setBlocks] = useState([]);
-  const [status, setStatus] = useState("");
-  const [error, setError] = useState("");
+  const ed = useBookEditor(bookId);
+  const [prefs, setPref] = useNotebookPrefs();
+  const [printRange, setPrintRange] = useState(null);
+  const active = ed.pages.find((p) => p.id === ed.activeId);
 
-  const latest = useRef({});
-  latest.current = { activeId, title, blocks };
-  const timer = useRef(null);
-
-  const save = async () => {
-    const { activeId: id, title: t, blocks: bl } = latest.current;
-    if (!id) return;
-    setStatus("Saving...");
-    try {
-      await api.put(`/books/${bookId}/pages/${id}`, {
-        title: t,
-        blocks: bl.map((b, i) => ({ block_type: b.block_type, content: b.content, position: i })),
-      });
-      setPages((p) => p.map((x) => (x.id === id ? { ...x, title: t } : x)));
-      setStatus("Saved");
-    } catch {
-      setStatus("Save failed");
+  const handlePrint = async (id) => {
+    if (id !== ed.activeId) {
+      await ed.openPage(id);
+      setTimeout(() => window.print(), 200);
+    } else {
+      window.print();
     }
   };
 
-  const touch = () => {
-    setStatus("Unsaved changes");
-    clearTimeout(timer.current);
-    timer.current = setTimeout(save, 800);
+  const removePage = (id) => {
+    if (window.confirm("Delete this page? It will move to Trash.")) ed.deletePage(id);
   };
 
-  // Save pending changes before leaving the page or switching
-  const flush = async () => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-      timer.current = null;
-      await save();
+  const goToNextPage = async () => {
+    const currentIndex = ed.pages.findIndex(p => p.id === ed.activeId);
+    if (currentIndex >= 0 && currentIndex < ed.pages.length - 1) {
+      await ed.openPage(ed.pages[currentIndex + 1].id);
+    } else {
+      await ed.addPage();
     }
-  };
-
-  const openPage = async (id) => {
-    await flush();
-    try {
-      const { data } = await api.get(`/books/${bookId}/pages/${id}`);
-      setActiveId(data.id);
-      setTitle(data.title);
-      setBlocks(data.blocks.length ? data.blocks.map(withKey) : [newBlock()]);
-      setStatus("");
-    } catch {
-      setError("Could not open that page.");
-    }
-  };
-
-  useEffect(() => {
-    if (!getToken()) {
-      nav("/login");
-      return;
-    }
-    (async () => {
-      try {
-        const [bookRes, list] = await Promise.all([api.get(`/books/${bookId}`), api.get(`/books/${bookId}/pages`)]);
-        setBookTitle(bookRes.data.title);
-        setPages(list.data);
-        if (list.data.length) {
-          const { data } = await api.get(`/books/${bookId}/pages/${list.data[0].id}`);
-          setActiveId(data.id);
-          setTitle(data.title);
-          setBlocks(data.blocks.length ? data.blocks.map(withKey) : [newBlock()]);
-        }
-      } catch {
-        setError("Could not load this book.");
-      }
-    })();
-    return () => clearTimeout(timer.current);
-    // eslint-disable-next-line
-  }, [bookId]);
-
-  const addPage = async () => {
-    await flush();
-    try {
-      const { data } = await api.post(`/books/${bookId}/pages`, { title: "Untitled" });
-      setPages((p) => [...p, data]);
-      setActiveId(data.id);
-      setTitle(data.title);
-      setBlocks([newBlock()]);
-      setStatus("");
-    } catch {
-      setError("Could not add a page.");
-    }
-  };
-
-  const deletePage = async () => {
-    if (!window.confirm("Delete this page? It will move to Trash.")) return;
-    clearTimeout(timer.current);
-    timer.current = null;
-    try {
-      await api.delete(`/books/${bookId}/pages/${activeId}`);
-      const rest = pages.filter((p) => p.id !== activeId);
-      setPages(rest);
-      if (rest.length) openPage(rest[0].id);
-      else {
-        setActiveId(null);
-        setTitle("");
-        setBlocks([]);
-      }
-    } catch {
-      setError("Could not delete the page.");
-    }
-  };
-
-  const updateBlock = (key, nb) => {
-    setBlocks((bl) => bl.map((b) => (b.key === key ? nb : b)));
-    touch();
-  };
-  const removeBlock = (key) => {
-    setBlocks((bl) => bl.filter((b) => b.key !== key));
-    touch();
-  };
-  const moveBlock = (idx, dir) => {
-    setBlocks((bl) => {
-      const a = [...bl];
-      [a[idx], a[idx + dir]] = [a[idx + dir], a[idx]];
-      return a;
-    });
-    touch();
-  };
-  const addBlock = (type) => {
-    setBlocks((bl) => [...bl, newBlock(type)]);
-    touch();
   };
 
   return (
-    <div className="ws ed">
-      <aside className="ed-side">
-        <Link to="/dashboard" className="ws-link">← All books</Link>
-        <h2>{bookTitle}</h2>
-        <nav>
-          {pages.map((p) => (
-            <button
-              key={p.id}
-              className={p.id === activeId ? "ed-page on" : "ed-page"}
-              onClick={() => openPage(p.id)}
-            >
-              <span>{p.page_number}</span>
-              {p.title || "Untitled"}
-            </button>
-          ))}
-        </nav>
-        <button className="ws-btn ghost" onClick={addPage}>+ New page</button>
-      </aside>
+    <div className="ed" data-printing={!!printRange}>
+      <PageList book={ed.book} pages={ed.pages} activeId={ed.activeId} onOpen={ed.openPage} onAdd={ed.addPage} onRename={ed.renamePage} onPrint={handlePrint} onDelete={removePage} onPrintRange={(from, to) => setPrintRange({from, to})} />
 
-      <section className="ed-main">
-        {error && <p className="ws-error">{error}</p>}
-        {!activeId ? (
-          <div className="ws-muted">
-            <p>This book has no pages yet.</p>
-            <button className="ws-btn" onClick={addPage}>Add the first page</button>
+      <main className="ed-main">
+        {ed.error && <p className="ed-error" role="alert">{ed.error}</p>}
+
+        {ed.loading ? (
+          <p className="ed-msg">Opening notebook...</p>
+        ) : !ed.activeId ? (
+          <div className="ed-empty">
+            <h2>This notebook has no pages yet</h2>
+            <p>Add the first page and start writing.</p>
+            <button type="button" onClick={ed.addPage}>Write the first page</button>
           </div>
         ) : (
           <>
-            <div className="ed-head">
-              <input
-                className="ed-title"
-                value={title}
-                maxLength={150}
-                placeholder="Page title"
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  touch();
-                }}
-              />
-              <span className="ed-status">{status}</span>
-              <button className="ws-btn ghost" onClick={deletePage}>Delete page</button>
-            </div>
-
-            {blocks.map((b, i) => (
-              <Block
-                key={b.key}
-                block={b}
-                first={i === 0}
-                last={i === blocks.length - 1}
-                onChange={(nb) => updateBlock(b.key, nb)}
-                onDelete={() => removeBlock(b.key)}
-                onMove={(d) => moveBlock(i, d)}
-              />
-            ))}
-
-            <div className="ed-add">
-              <span className="ws-muted">Add block:</span>
-              <button className="ws-btn ghost" onClick={() => addBlock("text")}>Text</button>
-              <button className="ws-btn ghost" onClick={() => addBlock("checklist")}>Checklist</button>
-              <button className="ws-btn ghost" onClick={() => addBlock("code")}>Code</button>
-            </div>
+            <EditorToolbar prefs={prefs} onPref={setPref} status={ed.status} />
+            <Paper
+              key={ed.activeId}
+              prefs={prefs}
+              pageNumber={active?.page_number}
+              title={ed.title}
+              onTitle={ed.editTitle}
+              blocks={ed.blocks}
+              onBlockChange={ed.updateBlock}
+              onBlockDelete={ed.removeBlock}
+              onBlockMove={ed.moveBlock}
+              onAddBlock={ed.addBlock}
+              onNext={goToNextPage}
+            />
+            {printRange && (
+              <PrintMulti bookId={bookId} pagesList={ed.pages} from={printRange.from} to={printRange.to} prefs={prefs} onDone={() => setPrintRange(null)} />
+            )}
           </>
         )}
-      </section>
+      </main>
     </div>
   );
 }
