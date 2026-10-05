@@ -73,7 +73,7 @@ export default function BookEditor() {
               onNext={goToNextPage}
             />
             {printRange && (
-              <PrintMulti bookId={bookId} pagesList={ed.pages} from={printRange.from} to={printRange.to} prefs={prefs} onDone={() => setPrintRange(null)} />
+              <PrintMulti bookId={bookId} pagesList={ed.pages} from={printRange.from} to={printRange.to} prefs={globalPrefs} onDone={() => setPrintRange(null)} />
             )}
           </>
         )}

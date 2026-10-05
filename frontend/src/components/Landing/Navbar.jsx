@@ -39,7 +39,7 @@ export default function Navbar() {
     <AppBar position="sticky" elevation={0} sx={{ bgcolor: '#f3f4fa', color: '#000000' }}>
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, md: 6 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} onClick={(e) => scrollTo(e, 'top')}>
-          <Box component="img" src={logo} alt="InkLock Logo" sx={{ height: 130, width: 'auto', objectFit: 'contain' }} />
+          <Box component="img" src={logo} alt="InkLock Logo" sx={{ height: 48, width: 'auto', objectFit: 'contain' }} />
         </Box>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 4 }}>
           <Button sx={navBtnStyle} onClick={(e) => scrollTo(e, 'why')}>Why InkLock</Button>

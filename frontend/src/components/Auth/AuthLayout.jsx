@@ -41,9 +41,8 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
 
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}
             style={{ position: 'relative', width: '100%', maxWidth: 440 }}>
-            {/* logo, cropped to the artwork */}
-            <Box component={Link} to="/" sx={{ display: 'block', position: 'relative', width: 150, height: 150, mx: 'auto', mb: 1, overflow: 'hidden' }}>
-              <Box component="img" src={logo} alt="InkLock" sx={{ position: 'absolute', width: 255, height: 255, left: -52, top: -42, maxWidth: 'none' }} />
+            <Box component={Link} to="/" sx={{ display: 'block', mx: 'auto', mb: 2, textAlign: 'center' }}>
+              <Box component="img" src={logo} alt="InkLock" sx={{ height: 110, width: 'auto' }} />
             </Box>
 
             <Typography align="center" component="h1" sx={{ fontFamily: HEAD, fontWeight: 800, fontSize: { xs: '1.8rem', sm: '2.1rem' }, letterSpacing: '-0.02em', color: '#1b1b2f', mb: 0.8 }}>

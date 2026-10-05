@@ -51,10 +51,8 @@ export default function Footer() {
         <Box sx={{ display: 'grid', gap: { xs: 5, md: 6 }, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: '5fr 2fr 2fr 3fr' }, pb: 6 }}>
           {/* brand */}
           <Box>
-            {/* crop the empty margin around the logo artwork */}
-            <Box component="a" href="#top" sx={{ display: 'block', position: 'relative', width: 170, height: 170, mb: 1, mt: -1, overflow: 'hidden' }}>
-              <Box component="img" src={logo} alt="InkLock logo"
-                sx={{ position: 'absolute', width: 290, height: 290, left: -60, top: -48, maxWidth: 'none' }} />
+            <Box component="a" href="#top" sx={{ display: 'block', mb: 3 }}>
+              <Box component="img" src={logo} alt="InkLock logo" sx={{ height: 60, width: 'auto' }} />
             </Box>
             <Typography sx={{ color: '#5b5b75', lineHeight: 1.7, maxWidth: 340 }}>
               Private notebooks and an encrypted password vault, behind layers only you control.
