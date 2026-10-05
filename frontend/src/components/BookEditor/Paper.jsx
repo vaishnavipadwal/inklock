@@ -1,4 +1,5 @@
 import Block from "./Block";
+import FloatingToolbar from "./FloatingToolbar";
 
 const today = () =>
   new Date().toLocaleDateString(undefined, {
@@ -11,6 +12,7 @@ export default function Paper({
 }) {
   return (
     <article className="paper" data-paper={prefs.paper} data-font={prefs.font} data-size={prefs.size || "normal"} data-ink={prefs.ink}>
+      <FloatingToolbar />
       <div className="paper-body">
         <div className="paper-date">{today()}</div>
         <input className="paper-title" value={title} maxLength={150}

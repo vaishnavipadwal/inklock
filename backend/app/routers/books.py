@@ -277,6 +277,8 @@ def update_page(book_id: int, page_id: int, data: schemas.PageUpdate,
     page = get_own_page(book_id, page_id, user, db, x_book_token)
     if data.title is not None:
         page.title = data.title
+    if data.prefs is not None:
+        page.prefs = data.prefs
     if data.blocks is not None:
         page.blocks.clear()
         db.flush()

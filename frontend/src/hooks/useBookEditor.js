@@ -13,12 +13,13 @@ export default function useBookEditor(bookId) {
   const [activeId, setActiveId] = useState(null);
   const [title, setTitle] = useState("");
   const [blocks, setBlocks] = useState([]);
+  const [prefs, setPrefs] = useState(null);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   const latest = useRef({});
-  latest.current = { activeId, title, blocks };
+  latest.current = { activeId, title, blocks, prefs };
   const timer = useRef(null);
 
   const save = useCallback(async () => {
@@ -28,6 +29,7 @@ export default function useBookEditor(bookId) {
     try {
       await api.put(`/books/${bookId}/pages/${id}`, {
         title: t,
+        prefs: latest.current.prefs || undefined,
         blocks: bl.map((b, i) => ({ block_type: b.block_type, content: b.content, position: i })),
       });
       setPages((p) => p.map((x) => (x.id === id ? { ...x, title: t } : x)));
@@ -58,6 +60,7 @@ export default function useBookEditor(bookId) {
       const { data } = await api.get(`/books/${bookId}/pages/${id}`);
       setActiveId(data.id);
       setTitle(data.title);
+      setPrefs(data.prefs || null);
       setBlocks(fromApi(data.blocks));
       setStatus("");
     },
@@ -124,6 +127,7 @@ export default function useBookEditor(bookId) {
       setPages((p) => [...p, data]);
       setActiveId(data.id);
       setTitle(data.title);
+      setPrefs(null);
       setBlocks([blank()]);
       setStatus("");
     } catch {
@@ -145,6 +149,7 @@ export default function useBookEditor(bookId) {
         else {
           setActiveId(null);
           setTitle("");
+          setPrefs(null);
           setBlocks([]);
           setStatus("");
         }
@@ -165,6 +170,7 @@ export default function useBookEditor(bookId) {
   }, [bookId]);
 
   const editTitle = (v) => { setTitle(v); touch(); };
+  const editPrefs = (v) => { setPrefs(v); touch(); };
   const updateBlock = (key, nb) => { setBlocks((bl) => bl.map((b) => (b.key === key ? nb : b))); touch(); };
   const removeBlock = (key) => {
     setBlocks((bl) => {
@@ -186,7 +192,7 @@ export default function useBookEditor(bookId) {
   const addBlock = (type) => { setBlocks((bl) => [...bl, blank(type)]); touch(); };
 
   return {
-    book, pages, activeId, title, blocks, status, error, loading,
-    openPage, addPage, deletePage, renamePage, editTitle, updateBlock, removeBlock, moveBlock, addBlock,
+    book, pages, activeId, title, blocks, prefs, status, error, loading,
+    openPage, addPage, deletePage, renamePage, editTitle, editPrefs, updateBlock, removeBlock, moveBlock, addBlock,
   };
 }

@@ -1,5 +1,5 @@
 from sqlalchemy import (Column, Integer, String, Boolean, Text, TIMESTAMP,
-                        ForeignKey, Enum, func)
+                        ForeignKey, Enum, func, JSON)
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -39,6 +39,7 @@ class Page(Base):
     book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), nullable=False)
     page_number = Column(Integer, nullable=False)
     title = Column(String(150), default="Untitled")
+    prefs = Column(JSON, nullable=True)
     is_deleted = Column(Boolean, default=False)
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 

@@ -62,12 +62,14 @@ class PageIn(BaseModel):
 class PageUpdate(BaseModel):
     title: Optional[str] = Field(default=None, max_length=150)
     blocks: Optional[List[BlockIn]] = None
+    prefs: Optional[dict] = None
 
 
 class PageListOut(BaseModel):
     id: int
     page_number: int
     title: str
+    prefs: Optional[dict] = None
 
     model_config = {"from_attributes": True}
 

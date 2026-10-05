@@ -11,7 +11,8 @@ import "../components/BookEditor/Editor.css";
 export default function BookEditor() {
   const { bookId } = useParams();
   const ed = useBookEditor(bookId);
-  const [prefs, setPref] = useNotebookPrefs();
+  const [globalPrefs, setGlobalPref] = useNotebookPrefs();
+  const activePrefs = ed.prefs || globalPrefs;
   const [printRange, setPrintRange] = useState(null);
   const active = ed.pages.find((p) => p.id === ed.activeId);
 
@@ -54,10 +55,13 @@ export default function BookEditor() {
           </div>
         ) : (
           <>
-            <EditorToolbar prefs={prefs} onPref={setPref} status={ed.status} />
+            <EditorToolbar prefs={activePrefs} onPref={(k, v) => {
+              setGlobalPref(k, v);
+              ed.editPrefs({ ...activePrefs, [k]: v });
+            }} status={ed.status} />
             <Paper
               key={ed.activeId}
-              prefs={prefs}
+              prefs={activePrefs}
               pageNumber={active?.page_number}
               title={ed.title}
               onTitle={ed.editTitle}
