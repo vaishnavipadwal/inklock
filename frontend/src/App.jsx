@@ -3,7 +3,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import BookEditor from "./pages/BookEditor";
+import BookGate from "./pages/BookGate";
 
 export default function App() {
   return (
@@ -12,7 +12,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/book/:bookId" element={<BookEditor />} />
+      <Route path="/book/:bookId" element={<BookGate />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

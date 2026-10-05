@@ -451,8 +451,12 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.bk-actions {
+  display: flex;
+  gap: 4px;
+}
 
-.bk-del {
+.bk-action {
   flex: none;
   align-self: flex-start;
   width: 30px;
@@ -468,18 +472,23 @@
   transition: opacity .15s, background .15s;
 }
 
-.bk:hover .bk-del,
-.bk-del:focus-visible {
+.bk:hover .bk-action,
+.bk-action:focus-visible {
   opacity: 1;
 }
 
-.bk-del:hover {
+.bk-edit-btn:hover {
+  background: #f0f0fa;
+  color: var(--accent);
+}
+
+.bk-del-btn:hover {
   background: #fff0f2;
   color: #b4233c;
 }
 
 @media (hover:none) {
-  .bk-del {
+  .bk-action {
     opacity: 1;
   }
 }

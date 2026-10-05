@@ -1,0 +1,27 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Manrope:wght@400;500;600;700&display=swap");
+
+.ug { min-height:100vh; display:grid; place-items:center; padding:24px; background:#f7f7fc; color:#14163a;
+  font-family:"Manrope",system-ui,sans-serif; }
+.ug *, .ug *::before, .ug *::after { box-sizing:border-box; }
+.ug button, .ug input { font:inherit; color:inherit; }
+.ug :focus-visible { outline:2px solid #5b4bff; outline-offset:2px; }
+.ug-card { width:min(420px,100%); display:grid; gap:14px; justify-items:center; text-align:center; padding:34px 30px 28px;
+  background:#fff; border:1px solid #e4e6f2; border-radius:22px; box-shadow:0 30px 70px rgba(20,22,58,.14); }
+.ug-icon { width:60px; height:60px; display:grid; place-items:center; border-radius:18px; color:#fff;
+  background:linear-gradient(150deg, var(--c), color-mix(in srgb, var(--c) 60%, #000)); box-shadow:0 10px 24px color-mix(in srgb, var(--c) 40%, transparent); }
+.ug-card h1 { font:600 28px/1.2 "Fraunces",Georgia,serif; margin:6px 0 0; overflow-wrap:anywhere; }
+.ug-sub { margin:0; color:#6b6f8e; font-size:14.5px; max-width:300px; }
+.ug-box { position:relative; width:100%; margin-top:6px; }
+.ug-box input { width:100%; padding:12px 66px 12px 14px; border:1px solid #e4e6f2; border-radius:12px; font-size:16px; background:#fff; }
+.ug-box input:focus { outline:none; border-color:#5b4bff; box-shadow:0 0 0 3px rgba(91,75,255,.15); }
+.ug-box button { position:absolute; right:8px; top:50%; transform:translateY(-50%); border:0; background:none; color:#5b4bff;
+  font-weight:600; font-size:13px; cursor:pointer; padding:5px 8px; border-radius:7px; }
+.ug-box button:hover { background:#efedff; }
+.ug-error { margin:0; width:100%; text-align:left; font-size:14px; color:#b4233c; background:#fff0f2; border:1px solid #fbc9d2; padding:9px 12px; border-radius:10px; }
+.ug-actions { display:flex; gap:10px; width:100%; margin-top:4px; }
+.ug-btn { flex:1; display:inline-flex; justify-content:center; align-items:center; padding:11px 16px; border-radius:11px; font-weight:600; cursor:pointer;
+  text-decoration:none; background:#5b4bff; color:#fff; border:1px solid #5b4bff; }
+.ug-btn:hover { filter:brightness(1.08); }
+.ug-btn:disabled { opacity:.6; cursor:default; }
+.ug-btn.ghost { background:#fff; color:#14163a; border-color:#e4e6f2; }
+.ug-btn.ghost:hover { background:#f0f0fa; filter:none; }

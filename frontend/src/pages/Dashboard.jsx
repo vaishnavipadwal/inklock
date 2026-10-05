@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api, { getToken, clearToken } from "../api/books";
+import api, { getToken, clearToken, bookToken } from "../api/books";
 import logo from "../assets/logo.png";
 import "../styles/Dashboard.css";
 import NewNotebookModal from "../components/Dashboard/NewNotebookModal";
 import NotebookCard from "../components/Dashboard/NotebookCard";
-import { Search, Plus, Trash } from "../components/UI/Icons";
+import { Search, Plus, Trash, Edit } from "../components/UI/Icons";
 
 const API = "http://127.0.0.1:8000";
 const MAX_MB = 2;
@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [sort, setSort] = useState("new");
 
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
@@ -42,6 +43,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!getToken()) return nav("/login");
+    bookToken.clearAll();
     Promise.all([api.get("/auth/me"), api.get("/books")])
       .then(([u, b]) => {
         setUser(u.data);
@@ -81,11 +83,25 @@ export default function Dashboard() {
   const closeDrawer = () => {
     if (preview) URL.revokeObjectURL(preview);
     setOpen(false);
+    setEditId(null);
     setForm(EMPTY);
     setFile(null);
     setPreview("");
     setFormError("");
     if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const editBook = (b) => {
+    setEditId(b.id);
+    setForm({
+      title: b.title,
+      description: b.description || "",
+      isPrivate: b.is_locked,
+      password: "", 
+      color: b.cover_color
+    });
+    setPreview(b.cover_image ? `${API}${b.cover_image}` : "");
+    setOpen(true);
   };
 
   const pickFile = (e) => {
@@ -118,7 +134,9 @@ export default function Dashboard() {
     e.preventDefault();
     const title = form.title.trim();
     if (!title) return setFormError("Book name is required.");
-    if (form.isPrivate && form.password.length < 6)
+    
+    const requirePassword = editId ? (form.isPrivate && !books.find(b => b.id === editId)?.is_locked) : form.isPrivate;
+    if (requirePassword && form.password.length < 6)
       return setFormError("A private book needs a password of at least 6 characters.");
 
     const fd = new FormData();
@@ -126,19 +144,31 @@ export default function Dashboard() {
     fd.append("description", form.description.trim());
     fd.append("is_private", form.isPrivate ? "true" : "false");
     fd.append("cover_color", form.color);
-    if (form.isPrivate) fd.append("password", form.password);
-    if (file) fd.append("cover", file);
+    
+    if (form.isPrivate && form.password) fd.append("password", form.password);
+    
+    if (file) {
+      fd.append("cover", file);
+    } else if (editId && !preview) { 
+      fd.append("remove_cover", "true");
+    }
 
     setSaving(true);
     setFormError("");
     try {
-      const { data } = await api.post("/books", fd);
-      setBooks((b) => [data, ...b]);
+      if (editId) {
+        const { data } = await api.put(`/books/${editId}`, fd);
+        setBooks((b) => b.map(x => x.id === editId ? data : x));
+        setToast(`"${data.title}" updated`);
+      } else {
+        const { data } = await api.post("/books", fd);
+        setBooks((b) => [data, ...b]);
+        setToast(`"${data.title}" created`);
+      }
       closeDrawer();
-      setToast(`"${data.title}" created`);
     } catch (err) {
       const d = err.response?.data?.detail;
-      setFormError(typeof d === "string" ? d : "Could not create the book.");
+      setFormError(typeof d === "string" ? d : "Could not save the notebook.");
     } finally {
       setSaving(false);
     }
@@ -242,7 +272,10 @@ export default function Dashboard() {
                     <h3>{b.title}</h3>
                     <p>{b.is_locked ? "Password protected" : b.description || "No description"}</p>
                   </div>
-                  <button className="bk-del" onClick={() => deleteBook(b)} aria-label={`Delete ${b.title}`}><Trash /></button>
+                  <div className="bk-actions">
+                    <button className="bk-action bk-edit-btn" onClick={() => editBook(b)} aria-label={`Edit ${b.title}`}><Edit /></button>
+                    <button className="bk-action bk-del-btn" onClick={() => deleteBook(b)} aria-label={`Delete ${b.title}`}><Trash /></button>
+                  </div>
                 </div>
               </article>
             ))}
