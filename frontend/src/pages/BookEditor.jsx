@@ -75,10 +75,8 @@ export default function BookEditor() {
     }
     (async () => {
       try {
-        const [books, list] = await Promise.all([api.get("/books"), api.get(`/books/${bookId}/pages`)]);
-        const book = books.data.find((b) => String(b.id) === bookId);
-        if (!book) return nav("/dashboard");
-        setBookTitle(book.title);
+        const [bookRes, list] = await Promise.all([api.get(`/books/${bookId}`), api.get(`/books/${bookId}/pages`)]);
+        setBookTitle(bookRes.data.title);
         setPages(list.data);
         if (list.data.length) {
           const { data } = await api.get(`/books/${bookId}/pages/${list.data[0].id}`);

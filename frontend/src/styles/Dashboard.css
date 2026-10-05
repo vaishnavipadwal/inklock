@@ -801,3 +801,33 @@
     transition: none !important;
   }
 }
+/* ---- header ---- */
+.dh { position:sticky; top:0; z-index:20; display:flex; justify-content:space-between; align-items:center; padding:8px 32px;
+  background:rgba(247,247,252,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+.dh-logo { height:58px; width:auto; display:block; }
+.dh-user { display:flex; align-items:center; gap:10px; padding:5px 6px; background:#fff; border:1px solid var(--line);
+  border-radius:99px; box-shadow:0 4px 14px rgba(20,22,58,.06); }
+.dh-avatar { width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-weight:700; color:#fff;
+  background:linear-gradient(135deg,#5b4bff,#22c3e6); }
+.dh-name { font-weight:600; font-size:14px; }
+.dh-out { width:34px; height:34px; display:grid; place-items:center; border:0; background:none; border-radius:50%; color:var(--muted); cursor:pointer; }
+.dh-out:hover { background:#f0f0fa; color:var(--ink); }
+
+/* ---- filter counts ---- */
+.db-seg button { display:inline-flex; align-items:center; gap:7px; }
+.db-seg b { font-size:11.5px; font-weight:700; min-width:20px; text-align:center; padding:1px 6px; border-radius:99px; background:#dfe1f2; color:var(--muted); }
+.db-seg button[aria-pressed="true"] b { background:#ecebff; color:var(--accent); }
+.db-search input:disabled { cursor:not-allowed; }
+
+/* ---- private section gate ---- */
+.pg { display:grid; justify-items:center; text-align:center; gap:14px; width:min(440px,100%); margin:10px auto 0; padding:40px 34px;
+  background:#fff; border:1px solid var(--line); border-radius:22px; box-shadow:0 24px 60px rgba(20,22,58,.1); }
+.pg-icon { width:60px; height:60px; display:grid; place-items:center; border-radius:18px; color:#fff;
+  background:linear-gradient(150deg,#5b4bff,#3a2fd0); box-shadow:0 10px 24px rgba(91,75,255,.35); }
+.pg h2 { font-size:25px; line-height:1.2; }
+.pg p { color:var(--muted); font-size:14.5px; max-width:340px; }
+.pg .pf { width:100%; text-align:left; }
+.pg .db-error { width:100%; text-align:left; }
+.pg .db-btn { justify-content:center; width:100%; }
+
+@media (max-width:640px) { .dh { padding:6px 16px; } .dh-name { display:none; } .dh-logo { height:46px; } }

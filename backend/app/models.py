@@ -11,6 +11,7 @@ class User(Base):
     name = Column(String(100), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
+    private_hash = Column(String(255), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
 

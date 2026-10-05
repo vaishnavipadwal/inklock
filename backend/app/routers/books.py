@@ -14,6 +14,7 @@ from .. import models, schemas
 from ..database import get_db
 from ..security import ALGORITHM, SECRET_KEY, hash_password, verify_password
 from .auth import get_current_user
+from .private import require_section
 
 router = APIRouter(prefix="/books", tags=["books"])
 
@@ -97,6 +98,8 @@ async def create_book(
         raise HTTPException(400, "Book name is required (max 150 characters).")
     if is_private and not (6 <= len(password) <= 64):
         raise HTTPException(400, "A private book needs a password of 6 to 64 characters.")
+    if is_private and not user.private_hash:
+        raise HTTPException(400, "Set your private section password first.")
 
     cover_path = None
     if cover is not None and cover.filename:
@@ -126,18 +129,34 @@ async def create_book(
 
 
 @router.get("", response_model=List[schemas.BookOut])
-def list_books(user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+def list_books(kind: str = "open", x_section_token: Optional[str] = Header(None),
+               user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    private = kind == "private"
+    if private:
+        require_section(user, x_section_token)
     return db.query(models.Book).filter(
-        models.Book.user_id == user.id, models.Book.is_deleted == False
+        models.Book.user_id == user.id,
+        models.Book.is_deleted == False,
+        models.Book.is_locked == private,
     ).order_by(models.Book.created_at.desc()).all()
 
 
+@router.get("/{book_id}", response_model=schemas.BookOut)
+def get_book(book_id: int, x_section_token: Optional[str] = Header(None),
+             user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    book = get_own_book(book_id, user, db)
+    if book.is_locked:
+        require_section(user, x_section_token)
+    return book
+
+
 @router.post("/{book_id}/unlock")
-def unlock_book(book_id: int, data: UnlockIn,
+def unlock_book(book_id: int, data: UnlockIn, x_section_token: Optional[str] = Header(None),
                 user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     book = get_own_book(book_id, user, db)
     if not book.is_locked:
         return {"book_token": ""}
+    require_section(user, x_section_token)
 
     key = (user.id, book.id)
     rec = _attempts.get(key)
@@ -212,9 +231,12 @@ async def update_book(
 
 
 @router.delete("/{book_id}", status_code=204)
-def delete_book(book_id: int, user: models.User = Depends(get_current_user),
+def delete_book(book_id: int, x_section_token: Optional[str] = Header(None),
+                user: models.User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
     book = get_own_book(book_id, user, db)
+    if book.is_locked:
+        require_section(user, x_section_token)
     book.is_deleted = True
     db.commit()
 

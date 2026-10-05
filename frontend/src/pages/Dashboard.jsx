@@ -1,187 +1,92 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import api, { getToken, clearToken, bookToken } from "../api/books";
-import logo from "../assets/logo.png";
-import "../styles/Dashboard.css";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import api, { clearToken, getToken, sectionToken } from "../api/books";
+import usePrivateSection from "../hooks/usePrivateSection";
+import useBooks from "../hooks/useBooks";
+import useNotebookForm from "../hooks/useNotebookForm";
+import DashboardHeader from "../components/Dashboard/DashboardHeader";
+import Toolbar from "../components/Dashboard/Toolbar";
+import PrivateGate from "../components/Dashboard/PrivateGate";
+import NotebookCard, { NotebookCover } from "../components/Dashboard/NotebookCard";
 import NewNotebookModal from "../components/Dashboard/NewNotebookModal";
-import NotebookCard from "../components/Dashboard/NotebookCard";
-import { Search, Plus, Trash, Edit } from "../components/UI/Icons";
-
-const API = "http://127.0.0.1:8000";
-const MAX_MB = 2;
-const TYPES = ["image/jpeg", "image/png", "image/webp"];
-const COLORS = ["#4f46e5", "#0ea5e9", "#14b8a6", "#f59e0b", "#ef4444", "#a855f7"];
-const EMPTY = { title: "", description: "", isPrivate: false, password: "", color: COLORS[0] };
+import "../styles/Dashboard.css";
 
 const greet = () => {
   const h = new Date().getHours();
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 };
 
-
+const Skeleton = () => (
+  <div className="db-grid">
+    {[0, 1, 2, 3].map((i) => <div className="db-skel" key={i} />)}
+  </div>
+);
 
 export default function Dashboard() {
   const nav = useNavigate();
+  const loc = useLocation();
   const [user, setUser] = useState(null);
-  const [books, setBooks] = useState([]);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState(loc.state?.tab === "private" ? "private" : "open");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("new");
   const [toast, setToast] = useState("");
 
-  const [q, setQ] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [sort, setSort] = useState("new");
-
-  const [open, setOpen] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState(EMPTY);
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState("");
-  const [formError, setFormError] = useState("");
-  const [saving, setSaving] = useState(false);
-  const fileRef = useRef(null);
+  const section = usePrivateSection();
+  const openBooks = useBooks("open", true);
+  const privBooks = useBooks("private", tab === "private" && section.unlocked, section.lock);
+  const active = tab === "open" ? openBooks : privBooks;
 
   useEffect(() => {
-    if (!getToken()) return nav("/login");
-    bookToken.clearAll();
-    Promise.all([api.get("/auth/me"), api.get("/books")])
-      .then(([u, b]) => {
-        setUser(u.data);
-        setBooks(b.data);
-      })
-      .catch(() => setError("Could not load your notebooks. Check that the backend is running."))
-      .finally(() => setLoading(false));
+    if (!getToken()) {
+      nav("/login");
+      return;
+    }
+    api.get("/auth/me").then(({ data }) => setUser(data)).catch(() => {});
   }, [nav]);
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(""), 2600);
+    const t = setTimeout(() => setToast(""), 3000);
     return () => clearTimeout(t);
   }, [toast]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => e.key === "Escape" && closeDrawer();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line
-  }, [open]);
+  const onCreated = (book) => {
+    section.refresh();
+    if (!book.is_locked) {
+      openBooks.setBooks((b) => [book, ...b]);
+      setToast(`"${book.title}" created`);
+    } else if (sectionToken.get()) {
+      if (tab === "private") privBooks.reload();
+      else setTab("private");
+      setToast(`"${book.title}" added to Private`);
+    } else {
+      setToast(`"${book.title}" created. Unlock the Private tab to see it.`);
+    }
+  };
+
+  const onUpdated = (book) => {
+    openBooks.reload();
+    if (section.unlocked) privBooks.reload();
+    setToast(`"${book.title}" updated`);
+  };
+
+  const nb = useNotebookForm({ section, onCreated, onUpdated });
 
   const shown = useMemo(() => {
-    let list = books.filter((b) => b.title.toLowerCase().includes(q.trim().toLowerCase()));
-    if (filter === "private") list = list.filter((b) => b.is_locked);
-    if (filter === "open") list = list.filter((b) => !b.is_locked);
+    let list = active.books.filter((b) => b.title.toLowerCase().includes(query.trim().toLowerCase()));
     if (sort === "az") list = [...list].sort((a, b) => a.title.localeCompare(b.title));
     return list;
-  }, [books, q, filter, sort]);
+  }, [active.books, query, sort]);
 
-  const privateCount = books.filter((b) => b.is_locked).length;
-  const firstName = user?.name?.split(" ")[0] || "";
-
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-
-  const closeDrawer = () => {
-    if (preview) URL.revokeObjectURL(preview);
-    setOpen(false);
-    setEditId(null);
-    setForm(EMPTY);
-    setFile(null);
-    setPreview("");
-    setFormError("");
-    if (fileRef.current) fileRef.current.value = "";
-  };
-
-  const editBook = (b) => {
-    setEditId(b.id);
-    setForm({
-      title: b.title,
-      description: b.description || "",
-      isPrivate: b.is_locked,
-      password: "", 
-      color: b.cover_color
-    });
-    setPreview(b.cover_image ? `${API}${b.cover_image}` : "");
-    setOpen(true);
-  };
-
-  const pickFile = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (!TYPES.includes(f.type)) {
-      setFormError("Cover must be a JPG, PNG or WebP image.");
-      e.target.value = "";
-      return;
-    }
-    if (f.size > MAX_MB * 1024 * 1024) {
-      setFormError(`Cover image must be ${MAX_MB} MB or smaller.`);
-      e.target.value = "";
-      return;
-    }
-    if (preview) URL.revokeObjectURL(preview);
-    setFormError("");
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
-  };
-
-  const removeFile = () => {
-    if (preview) URL.revokeObjectURL(preview);
-    setFile(null);
-    setPreview("");
-    if (fileRef.current) fileRef.current.value = "";
-  };
-
-  const submit = async (e) => {
-    e.preventDefault();
-    const title = form.title.trim();
-    if (!title) return setFormError("Book name is required.");
-    
-    const requirePassword = editId ? (form.isPrivate && !books.find(b => b.id === editId)?.is_locked) : form.isPrivate;
-    if (requirePassword && form.password.length < 6)
-      return setFormError("A private book needs a password of at least 6 characters.");
-
-    const fd = new FormData();
-    fd.append("title", title);
-    fd.append("description", form.description.trim());
-    fd.append("is_private", form.isPrivate ? "true" : "false");
-    fd.append("cover_color", form.color);
-    
-    if (form.isPrivate && form.password) fd.append("password", form.password);
-    
-    if (file) {
-      fd.append("cover", file);
-    } else if (editId && !preview) { 
-      fd.append("remove_cover", "true");
-    }
-
-    setSaving(true);
-    setFormError("");
-    try {
-      if (editId) {
-        const { data } = await api.put(`/books/${editId}`, fd);
-        setBooks((b) => b.map(x => x.id === editId ? data : x));
-        setToast(`"${data.title}" updated`);
-      } else {
-        const { data } = await api.post("/books", fd);
-        setBooks((b) => [data, ...b]);
-        setToast(`"${data.title}" created`);
-      }
-      closeDrawer();
-    } catch (err) {
-      const d = err.response?.data?.detail;
-      setFormError(typeof d === "string" ? d : "Could not save the notebook.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const deleteBook = async (book) => {
+  const remove = async (book) => {
     if (!window.confirm(`Delete "${book.title}"? It will move to Trash.`)) return;
     try {
       await api.delete(`/books/${book.id}`);
-      setBooks((b) => b.filter((x) => x.id !== book.id));
+      (book.is_locked ? privBooks : openBooks).setBooks((b) => b.filter((x) => x.id !== book.id));
+      if (book.is_locked) section.refresh();
       setToast(`"${book.title}" moved to Trash`);
     } catch {
-      setError("Could not delete the book.");
+      setToast("Could not delete the notebook.");
     }
   };
 
@@ -190,115 +95,95 @@ export default function Dashboard() {
     nav("/login");
   };
 
-  return (
-    <div className="db">
-      <header className="db-top">
-        <img src={logo} alt="InkLock" className="db-logo" />
-        <div className="db-user-menu">
-          <div className="db-user-pill">
-            <span className="db-avatar" aria-hidden="true">{firstName.charAt(0).toUpperCase()}</span>
-            <span className="db-name">{user?.name}</span>
-          </div>
-          <button className="db-logout" onClick={logout} aria-label="Log out" title="Log out">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
+  const isPrivateTab = tab === "private";
+  const total = openBooks.books.length + section.privateCount;
+
+  const renderBody = () => {
+    if (isPrivateTab && !section.ready) return <Skeleton />;
+    if (isPrivateTab && !section.unlocked)
+      return (
+        <PrivateGate
+          hasPassword={section.hasPassword}
+          count={section.privateCount}
+          onUnlock={section.unlock}
+          onSetup={section.setup}
+          onCreate={() => nb.openModal(true)}
+        />
+      );
+    if (active.loading) return <Skeleton />;
+    if (active.books.length === 0 && !active.error)
+      return (
+        <div className="db-empty">
+          <NotebookCover title={isPrivateTab ? "Secrets" : "Ideas"} color="#4f46e5" locked={isPrivateTab} />
+          <h2>{isPrivateTab ? "No private notebooks yet" : "No open notebooks yet"}</h2>
+          <p>
+            {isPrivateTab
+              ? "Private notebooks live here, behind your section password and their own passwords."
+              : "Create a notebook for study, work or journaling."}
+          </p>
+          <button className="db-btn" onClick={() => nb.openModal(isPrivateTab)}>
+            {isPrivateTab ? "Create a private notebook" : "Create a notebook"}
           </button>
         </div>
-      </header>
+      );
+    return (
+      <div className="db-grid">
+        <button className="bk-new" onClick={() => nb.openModal(isPrivateTab)}>
+          <span>+</span>
+          New {isPrivateTab ? "private " : ""}notebook
+        </button>
+        {shown.map((b) => (
+          <NotebookCard key={b.id} book={b} onOpen={(x) => nav(`/book/${x.id}`)} onEdit={(x) => nb.openModal(x.is_locked, x)} onDelete={remove} />
+        ))}
+        {shown.length === 0 && <p className="db-none">No notebooks match your search.</p>}
+      </div>
+    );
+  };
+
+  return (
+    <div className="db">
+      <DashboardHeader user={user} onLogout={logout} />
 
       <main className="db-main">
         <section className="db-hero">
-          <h1>{greet()}{firstName ? `, ${firstName}` : ""}.</h1>
+          <h1>{greet()}{user?.name ? `, ${user.name.split(" ")[0]}` : ""}.</h1>
           <p>
-            {loading
+            {!section.ready || openBooks.loading
               ? "Opening your shelf..."
-              : books.length === 0
+              : total === 0
               ? "Your shelf is empty. Start your first notebook."
-              : `You have ${books.length} notebook${books.length > 1 ? "s" : ""}, ${privateCount} of them private.`}
+              : `You have ${total} notebook${total > 1 ? "s" : ""}, ${section.privateCount} of them private.`}
           </p>
         </section>
 
-        <div className="db-tools">
-          <label className="db-search">
-            <Search />
-            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search notebooks" />
-          </label>
-          <div className="db-seg" role="group" aria-label="Filter notebooks">
-            {[["all", "All"], ["open", "Open"], ["private", "Private"]].map(([k, l]) => (
-              <button key={k} aria-pressed={filter === k} onClick={() => setFilter(k)}>{l}</button>
-            ))}
-          </div>
-          <select className="db-sort" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort notebooks">
-            <option value="new">Newest first</option>
-            <option value="az">A to Z</option>
-          </select>
-          <button className="db-btn" onClick={() => setOpen(true)}><Plus /> New notebook</button>
-        </div>
+        <Toolbar
+          query={query} onQuery={setQuery}
+          tab={tab} onTab={setTab}
+          counts={{ open: openBooks.books.length, private: section.privateCount }}
+          sectionLocked={!section.unlocked}
+          sort={sort} onSort={setSort}
+          onNew={() => nb.openModal(isPrivateTab)}
+          canLock={isPrivateTab && section.unlocked}
+          onLock={section.lock}
+        />
 
-        {error && <p className="db-error">{error}</p>}
-
-        {loading ? (
-          <div className="db-grid">
-            {[0, 1, 2, 3].map((i) => <div className="db-skel" key={i} />)}
-          </div>
-        ) : books.length === 0 && !error ? (
-          <div className="db-empty">
-            <NotebookCard title="Ideas" color="#4f46e5" />
-            <h2>Nothing on the shelf yet</h2>
-            <p>Create a notebook for study, work or journaling. Make it private to lock it with its own password.</p>
-            <button className="db-btn" onClick={() => setOpen(true)}><Plus /> Create your first notebook</button>
-          </div>
-        ) : (
-          <div className="db-grid">
-            <button className="bk-new" onClick={() => setOpen(true)}>
-              <span><Plus /></span>
-              New notebook
-            </button>
-            {shown.map((b) => (
-              <article className="bk" key={b.id}>
-                <button className="bk-open" onClick={() => nav(`/book/${b.id}`)} aria-label={`Open ${b.title}`}>
-                  <NotebookCard
-                    title={b.title}
-                    color={b.cover_color}
-                    image={b.cover_image ? `${API}${b.cover_image}` : ""}
-                    locked={b.is_locked}
-                  />
-                </button>
-                <div className="bk-meta">
-                  <div>
-                    <h3>{b.title}</h3>
-                    <p>{b.is_locked ? "Password protected" : b.description || "No description"}</p>
-                  </div>
-                  <div className="bk-actions">
-                    <button className="bk-action bk-edit-btn" onClick={() => editBook(b)} aria-label={`Edit ${b.title}`}><Edit /></button>
-                    <button className="bk-action bk-del-btn" onClick={() => deleteBook(b)} aria-label={`Delete ${b.title}`}><Trash /></button>
-                  </div>
-                </div>
-              </article>
-            ))}
-            {shown.length === 0 && <p className="db-none">No notebooks match your search or filter.</p>}
-          </div>
-        )}
+        {active.error && !(isPrivateTab && !section.unlocked) && <p className="db-error">{active.error}</p>}
+        {renderBody()}
       </main>
 
       {toast && <div className="db-toast" role="status">{toast}</div>}
 
-      {open && (
+      {nb.open && (
         <NewNotebookModal
-          form={form}
-          set={set}
-          file={file}
-          fileRef={fileRef}
-          onPick={pickFile}
-          onRemove={removeFile}
-          onSubmit={submit}
-          onClose={closeDrawer}
-          error={formError}
-          saving={saving}
-          previewNode={<NotebookCard title={form.title} color={form.color} image={preview} locked={form.isPrivate} />}
+          form={nb.form} set={nb.set}
+          file={nb.file} fileRef={nb.fileRef}
+          onPick={nb.pickFile} onRemove={nb.removeFile}
+          onSubmit={nb.submit} onClose={nb.close}
+          error={nb.error} saving={nb.saving} isEdit={nb.isEdit}
+          needsSectionSetup={nb.form.isPrivate && !section.hasPassword}
+          previewNode={
+            <NotebookCover title={nb.form.title} color={nb.form.color} image={nb.preview} locked={nb.form.isPrivate} />
+          }
         />
       )}
     </div>

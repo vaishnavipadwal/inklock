@@ -17,20 +17,21 @@ export default function useBookAccess(bookId) {
     }
     setState("checking");
     api
-      .get("/books")
+      .get(`/books/${bookId}`)
       .then(({ data }) => {
-        const found = data.find((b) => String(b.id) === bookId);
-        if (!found) return nav("/dashboard");
-        setBook(found);
-        setState(!found.is_locked || bookToken.get(bookId) ? "open" : "locked");
+        setBook(data);
+        setState(!data.is_locked || bookToken.get(bookId) ? "open" : "locked");
       })
-      .catch(() => {
+      .catch((err) => {
+        const s = err.response?.status;
+        // 403 = private section is locked, so go back and unlock it first
+        if (s === 403) return nav("/dashboard", { state: { tab: "private" } });
+        if (s === 404) return nav("/dashboard");
         setError("Could not load this notebook. Check that the backend is running.");
         setState("error");
       });
   }, [bookId, nav]);
 
-  // Returns true when unlocked, false when the password was wrong
   const unlock = useCallback(
     async (password) => {
       if (!password) {
