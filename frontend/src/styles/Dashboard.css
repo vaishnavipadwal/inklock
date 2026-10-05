@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&family=Caveat:wght@400;600;700&family=Montaga&display=swap");
 
 .db {
   --bg: #fff;
@@ -23,8 +23,8 @@
 .db h1,
 .db h2,
 .db h3 {
-  font-family: "Fraunces", Georgia, serif;
-  font-weight: 600;
+  font-family: "Montaga", serif;
+  font-weight: 400;
   margin: 0;
 }
 
