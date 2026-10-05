@@ -164,10 +164,18 @@ export default function Dashboard() {
     <div className="db">
       <header className="db-top">
         <img src={logo} alt="InkLock" className="db-logo" />
-        <div className="db-user">
-          <span className="db-avatar" aria-hidden="true">{firstName.charAt(0).toUpperCase()}</span>
-          <span className="db-name">{user?.name}</span>
-          <button className="db-btn ghost" onClick={logout}>Log out</button>
+        <div className="db-user-menu">
+          <div className="db-user-pill">
+            <span className="db-avatar" aria-hidden="true">{firstName.charAt(0).toUpperCase()}</span>
+            <span className="db-name">{user?.name}</span>
+          </div>
+          <button className="db-logout" onClick={logout} aria-label="Log out" title="Log out">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
         </div>
       </header>
 
